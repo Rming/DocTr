@@ -39,7 +39,7 @@ def reload_model(model, path=""):
         return model
     else:
         model_dict = model.state_dict()
-        pretrained_dict = torch.load(path, map_location='cuda:0')
+        pretrained_dict = torch.load(path, map_location=torch.device('cpu'))
         print(len(pretrained_dict.keys()))
         pretrained_dict = {k[7:]: v for k, v in pretrained_dict.items() if k[7:] in model_dict}
         print(len(pretrained_dict.keys()))
@@ -47,14 +47,14 @@ def reload_model(model, path=""):
         model.load_state_dict(model_dict)
 
         return model
-        
+
 
 def reload_segmodel(model, path=""):
     if not bool(path):
         return model
     else:
         model_dict = model.state_dict()
-        pretrained_dict = torch.load(path, map_location='cuda:0')
+        pretrained_dict = torch.load(path, map_location=torch.device('cpu'))
         print(len(pretrained_dict.keys()))
         pretrained_dict = {k[6:]: v for k, v in pretrained_dict.items() if k[6:] in model_dict}
         print(len(pretrained_dict.keys()))
@@ -62,7 +62,7 @@ def reload_segmodel(model, path=""):
         model.load_state_dict(model_dict)
 
         return model
-        
+
 
 def rec(opt):
     # print(torch.__version__) # 1.5.1
@@ -72,34 +72,34 @@ def rec(opt):
         os.mkdir(opt.gsave_path)
     if not os.path.exists(opt.isave_path):  # create save path
         os.mkdir(opt.isave_path)
-    
-    GeoTr_Seg_model = GeoTr_Seg().cuda()
+
+    GeoTr_Seg_model = GeoTr_Seg()
     # reload segmentation model
     reload_segmodel(GeoTr_Seg_model.msk, opt.Seg_path)
     # reload geometric unwarping model
     reload_model(GeoTr_Seg_model.GeoTr, opt.GeoTr_path)
-    
-    IllTr_model = IllTr().cuda()
+
+    IllTr_model = IllTr()
     # reload illumination rectification model
     reload_model(IllTr_model, opt.IllTr_path)
-    
+
     # To eval mode
     GeoTr_Seg_model.eval()
     IllTr_model.eval()
-  
+
     for img_path in img_list:
         name = img_path.split('.')[-2]  # image name
 
         img_path = opt.distorrted_path + img_path  # read image and to tensor
-        im_ori = np.array(Image.open(img_path))[:, :, :3] / 255. 
+        im_ori = np.array(Image.open(img_path))[:, :, :3] / 255.
         h, w, _ = im_ori.shape
         im = cv2.resize(im_ori, (288, 288))
         im = im.transpose(2, 0, 1)
         im = torch.from_numpy(im).float().unsqueeze(0)
-        
+
         with torch.no_grad():
             # geometric unwarping
-            bm = GeoTr_Seg_model(im.cuda())
+            bm = GeoTr_Seg_model(im)
             bm = bm.cpu()
             bm0 = cv2.resize(bm[0, 0].numpy(), (w, h))  # x flow
             bm1 = cv2.resize(bm[0, 1].numpy(), (w, h))  # y flow
