@@ -559,9 +559,9 @@ def get_parameter_number(net):
 
 
 if __name__ == '__main__':
-    net = U2NET(4, 1).cuda()
+    net = U2NET(4, 1)
     print(get_parameter_number(net))  # 69090500 加attention后69442032
     with torch.no_grad():
-        inputs = torch.zeros(1, 3, 256, 256).cuda()
+        inputs = torch.zeros(1, 3, 256, 256)
         outs = net(inputs)
         print(outs[0].shape)  # torch.Size([2, 3, 256, 256]) torch.Size([2, 2, 256, 256])

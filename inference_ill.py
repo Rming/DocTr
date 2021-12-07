@@ -54,7 +54,7 @@ def illCorrection(model, totalPatch):
     for j in range(0, ynum):
         for i in range(0, xnum):
             patchImg = torch.from_numpy(totalPatch[j, i]).permute(2,0,1)
-            patchImg = patchImg.cuda().view(1, 3, 128, 128)
+            patchImg = patchImg.view(1, 3, 128, 128)
 
             output = model(patchImg)
             output = output.permute(0, 2, 3, 1).data.cpu().numpy()[0]
